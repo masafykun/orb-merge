@@ -137,10 +137,19 @@ public class MergeOrbs : MonoBehaviour
         Destroy(pv.GetComponent<Collider>());
         preview = pv.transform;
 
-        // --- HUD（ワールド空間 TextMesh。左上） ---
-        hud = MakeText("HUD", new Vector3(-OrthoSize * (16f / 9f) + 0.3f, OrthoSize - 0.3f, 0f), TextAnchor.UpperLeft);
+        // --- HUD（ワールド空間 TextMesh。左上）。位置は実際のカメラ視野から毎フレーム算出（アスペクト非依存） ---
+        hud = MakeText("HUD", Vector3.zero, TextAnchor.UpperLeft);
+        PositionHud();
 
         spawnerX = 0f;
+    }
+
+    // HUD を実際の表示領域の左上に貼り付ける。16:9 決め打ちをやめ、どんなアスペクト/リサイズでも見切れない。
+    void PositionHud()
+    {
+        if (hud == null || cam == null) return;
+        Vector3 tl = cam.ViewportToWorldPoint(new Vector3(0f, 1f, 10f));
+        hud.transform.position = new Vector3(tl.x + 0.3f, tl.y - 0.25f, 0f);
     }
 
     void MakeWall(string name, Vector3 pos, Vector3 scale, Color c)
@@ -191,6 +200,7 @@ public class MergeOrbs : MonoBehaviour
 
     void Update()
     {
+        PositionHud();
         if (gameOver)
         {
             if (Input.GetKeyDown(KeyCode.R)) Restart();
